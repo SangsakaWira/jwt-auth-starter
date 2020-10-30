@@ -2,20 +2,38 @@ const bcrypt = require("bcryptjs")
 const dotenv = require("dotenv")
 const jwt = require("jsonwebtoken")
 const user = require("../models/user")
-
 dotenv.config()
 
+let userData = {
+    status:200,
+    msg:"Success",
+    token:"",
+    error:false
+}
+
 exports.login = (req,res) =>{
-    user.findOne({ $or:[{'username':req.body.user}, {'email':req.body.user}]},(err,doc)=>{
+    user.findOne({ $or:[{'username':req.body.username}, {'email':req.body.username}]},(err,doc)=>{
         if (err) return res.status(500).send('Internal server error.')
-        if (!doc) return res.status(404).send('User not found.')
+        if (!doc) return res.status(404).send({
+            ...userData,
+            status:200,
+            msg:"User Not Found!",
+            token:"",
+            error:false
+        })
         const passwordIsValid = bcrypt.compareSync(
             req.body.password,
             doc.password
         )
 
         if (!passwordIsValid){
-            res.status(401).send('Invalid credentials.')
+            return res.status(200).send({
+                ...userData,
+                status:200,
+                msg:"Invalid Credentials",
+                token:"",
+                error:false
+            })
         }
             
         const token = jwt.sign({
@@ -25,8 +43,11 @@ exports.login = (req,res) =>{
         process.env.SECRET_KEY,{expiresIn: 86400})
 
         res.status(200).send({
-            message: 'Success',
-            token
+            ...userData,
+            status:200,
+            msg:"Success",
+            token:token,
+            error:false
         })
             
     })
@@ -42,9 +63,26 @@ exports.register = (req,res) =>{
         email:email
     },(err,doc)=>{
         if(err){
-            res.send(err)
+            return res.send(res.status(200).send({
+                ...userData,
+                status:200,
+                msg:err,
+                token:"",
+                error:true
+            }))
         }else{
-            res.send(doc)
+            const token = jwt.sign({
+                id:doc._id,
+                role:doc.role
+            },
+            process.env.SECRET_KEY,{expiresIn: 86400})
+            res.send(res.status(200).send({
+                ...userData,
+                status:200,
+                msg:"Success",
+                token:token,
+                error:false
+            }))
         }
     })
 }
