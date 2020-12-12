@@ -4,34 +4,26 @@ const jwt = require("jsonwebtoken")
 const user = require("../models/user")
 dotenv.config()
 
-let userData = {
-    status:200,
-    msg:"Success",
-    token:"",
-    error:false
-}
-
 exports.login = (req,res) =>{
-    user.findOne({ $or:[{'username':req.body.username}, {'email':req.body.username}]},(err,doc)=>{
-        if (err) return res.status(500).send('Internal server error.')
-        if (!doc) return res.status(404).send({
-            ...userData,
+    user.findOne({ $or:[{'username':req.body.email}, {'email':req.body.email}]},(err,doc)=>{
+        if (err) return res.send('Internal server error.')
+        if (!doc) return res.send({
             status:200,
             msg:"User Not Found!",
-            token:"",
+            token:null,
             error:false
         })
+        
         const passwordIsValid = bcrypt.compareSync(
             req.body.password,
             doc.password
         )
 
         if (!passwordIsValid){
-            return res.status(200).send({
-                ...userData,
+            return res.send({
                 status:200,
                 msg:"Invalid Credentials",
-                token:"",
+                token:null,
                 error:false
             })
         }
@@ -43,7 +35,6 @@ exports.login = (req,res) =>{
         process.env.SECRET_KEY,{expiresIn: 86400})
 
         res.status(200).send({
-            ...userData,
             status:200,
             msg:"Success",
             token:token,
@@ -64,10 +55,9 @@ exports.register = (req,res) =>{
     },(err,doc)=>{
         if(err){
             return res.send(res.status(200).send({
-                ...userData,
                 status:200,
                 msg:err,
-                token:"",
+                token:null,
                 error:true
             }))
         }else{
@@ -77,7 +67,6 @@ exports.register = (req,res) =>{
             },
             process.env.SECRET_KEY,{expiresIn: 86400})
             res.send(res.status(200).send({
-                ...userData,
                 status:200,
                 msg:"Success",
                 token:token,

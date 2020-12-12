@@ -10,9 +10,9 @@ const userRouter = require('./routes/user')
 const app = express()
 dotenv.config();
 
-app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cors())
 app.use(express.static(__dirname + '/public'))
 
 app.use("/user", userRouter)

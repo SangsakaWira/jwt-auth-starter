@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-mongoose.connect('mongodb://localhost/jwt-database', {
+mongoose.connect('mongodb://localhost/safevision-database', {
 	useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true
